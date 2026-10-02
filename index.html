@@ -91,7 +91,7 @@
         </div>
 
         <div class="bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 font-semibold text-[11px] text-center">
-          ⚠️ <strong>REGLA IMPORTANTE:</strong> No hay rebotes para el otro equipo.
+          ⚠️️ <strong>REGLA IMPORTANTE:</strong> No hay rebotes para el otro equipo.
         </div>
       </div>
 
@@ -136,7 +136,7 @@
     </button>
 
     <span id="r-num" class="inline-block bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-extrabold px-3 py-1 rounded-full mb-3">
-      Ronda 1 / 16
+      Ronda 1 / 14
     </span>
 
     <!-- PESTAÑAS PARA ALTERNAR ENTRE FASE A Y FASE B -->
@@ -239,7 +239,7 @@
 
     <!-- REPRODUCTOR INTEGRADO CON PERSONAS PENSANDO -->
     <div class="relative w-full pb-[56.25%] bg-black rounded-xl overflow-hidden my-3 border border-slate-800 shadow-inner">
-      <iframe id="yt-iframe" class="absolute top-0 left-0 w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe id="yt-iframe" class="absolute top-0 left-0 w-full h-full border-0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
       
       <!-- PANTALLA NEGRA CON EQUIPOS PENSANDO -->
       <div id="video-curtain" class="absolute inset-0 bg-black flex flex-col items-center justify-center z-10 p-4 transition-opacity duration-300">
@@ -309,10 +309,8 @@
     <div class="bg-slate-900 border-2 border-amber-400 p-8 rounded-3xl max-w-sm w-full space-y-6 shadow-2xl relative">
       <div class="text-6xl animate-bounce">🏆</div>
       <div id="winner-title" class="text-2xl font-black text-amber-400 uppercase tracking-wide leading-snug">
-        <!-- Rellenado con JS -->
       </div>
       <div id="winner-score" class="text-lg font-extrabold text-slate-200">
-        <!-- Rellenado con JS -->
       </div>
       <button onclick="closeWinnerModal()" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-black py-3 px-4 rounded-2xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg">
         Volver al juego
@@ -518,7 +516,6 @@
       document.getElementById('song-title-info-1').classList.add('hidden');
 
       showVideoCurtain(true);
-
       switchPhase('A');
 
       document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?enablejsapi=1&playsinline=1`;
@@ -618,20 +615,38 @@
       clearTimeout(timer);
       stopFaseATimer();
       showVideoCurtain(false);
+      
       const r = rounds[current];
+      const iframe = document.getElementById('yt-iframe');
       
       if (isGameCut) {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&autoplay=1&playsinline=1`;
-        
-        // Se calcula la duración real restando el tiempo de inicio al tiempo final
-        const playDuration = Math.max((r.duration - r.start), 1) * 1000;
+        iframe.src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&autoplay=1&playsinline=1`;
         
         timer = setTimeout(() => {
           document.getElementById('overlay').classList.remove('hidden');
-          document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&playsinline=1`;
-        }, playDuration);
+        }, r.duration * 1000);
       } else {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?autoplay=1&playsinline=1`;
+        iframe.src = `https://www.youtube.com/embed/${r.id}?autoplay=1&playsinline=1`;
+      }
+    }
+
+    function playHintSong(num, isGameCut) {
+      clearTimeout(timer);
+      stopFaseATimer();
+      showVideoCurtain(false);
+      
+      const r = rounds[current];
+      const hintObj = r.hints[num - 1];
+      const iframe = document.getElementById('yt-iframe');
+
+      if (isGameCut) {
+        iframe.src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&autoplay=1&playsinline=1`;
+        
+        timer = setTimeout(() => {
+          document.getElementById('overlay').classList.remove('hidden');
+        }, hintObj.duration * 1000);
+      } else {
+        iframe.src = `https://www.youtube.com/embed/${hintObj.id}?autoplay=1&playsinline=1`;
       }
     }
 
@@ -649,27 +664,6 @@
       const el = document.getElementById(`song-title-info-${num}`);
       el.innerText = `🎵 Canción: "${hintObj.title}"`;
       el.classList.remove('hidden');
-    }
-
-    function playHintSong(num, isGameCut) {
-      clearTimeout(timer);
-      stopFaseATimer();
-      showVideoCurtain(false);
-      const r = rounds[current];
-      const hintObj = r.hints[num - 1];
-
-      if (isGameCut) {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&autoplay=1&playsinline=1`;
-        
-        const durationSecs = hintObj.duration > hintObj.start ? (hintObj.duration - hintObj.start) : hintObj.duration;
-        
-        timer = setTimeout(() => {
-          document.getElementById('overlay').classList.remove('hidden');
-          document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&playsinline=1`;
-        }, durationSecs * 1000);
-      } else {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?autoplay=1&playsinline=1`;
-      }
     }
 
     function closeOverlay() {
