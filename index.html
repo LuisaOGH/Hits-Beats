@@ -679,6 +679,7 @@
     function destroyPlayer() {
       clearCut();
       if (ytPlayer) { try { ytPlayer.destroy(); } catch (e) {} ytPlayer = null; }
+      { const h = document.getElementById('yt-hud'); if (h) h.remove(); }
       document.getElementById('yt-wrap').innerHTML = '';   // elimina el iframe: se corta imagen y sonido
     }
 
@@ -691,10 +692,9 @@
       start = Math.floor(start || 0);
       const token = ++playToken;
       const hasCut = lengthSecs > 0 && !!mode;
-      if (hasCut) cut = { token: token, mode: mode, start: start, end: start + lengthSecs, fallbackSet: false };
+      if (hasCut) cut = { token: token, mode: mode, start: start, end: start + lengthSecs, started: false };
 
       const vars = { autoplay: 1, playsinline: 1, rel: 0, start: start };
-      if (hasCut) vars.end = start + Math.ceil(lengthSecs);   // YouTube también para solo en ese segundo
 
       document.getElementById('yt-wrap').innerHTML = '<div id="yt-player"></div>';
       ytPlayer = new YT.Player('yt-player', {
@@ -708,26 +708,47 @@
         }
       });
 
-      if (hasCut) cutPoll = setInterval(() => checkCut(token), 200);
+      cutPoll = setInterval(() => checkCut(token, start, lengthSecs), 200);
     }
 
     function onPlayerState(e, token) {
       if (!cut || cut.token !== token) return;
       if (e.data === 0) { endCut(token); return; }                 // ENDED
-      if (e.data === 1 && !cut.fallbackSet) {                       // PLAYING: red de seguridad por reloj
-        cut.fallbackSet = true;
+      if (e.data === 1 && !cut.started) {                           // primer PLAYING de este corte
+        cut.started = true;
         let t = cut.start;
         try { t = ytPlayer.getCurrentTime(); } catch (err) {}
-        const ms = Math.max((cut.end - t) * 1000, 0) + 300;
+        // Si YouTube no ha arrancado en el segundo pedido, lo colocamos nosotros
+        if (Math.abs(t - cut.start) > 1.5) {
+          try { ytPlayer.seekTo(cut.start, true); t = cut.start; } catch (err) {}
+        }
+        // Red de seguridad por reloj, contada desde la posición corregida
+        const ms = Math.max((cut.end - t) * 1000, 0) + 500;
         cutFallback = setTimeout(() => endCut(token), ms);
       }
     }
 
-    function checkCut(token) {
-      if (!cut || cut.token !== token || !ytPlayer) return;
-      try {
-        if (ytPlayer.getPlayerState() === 1 && ytPlayer.getCurrentTime() >= cut.end) endCut(token);
-      } catch (err) {}
+    function checkCut(token, start, lengthSecs) {
+      if (!ytPlayer) return;
+      let t = 0;
+      try { t = ytPlayer.getCurrentTime(); } catch (err) { return; }
+      updateHud(start, lengthSecs, t);
+      if (!cut || cut.token !== token || !cut.started) return;
+      if (t >= cut.end) endCut(token);
+    }
+
+    // Contador de depuración: añade ?debug=1 al final de la URL para verlo
+    function updateHud(start, lengthSecs, t) {
+      if (!/debug/.test(location.search)) return;
+      let hud = document.getElementById('yt-hud');
+      if (!hud) {
+        hud = document.createElement('div');
+        hud.id = 'yt-hud';
+        hud.style.cssText = 'position:absolute;top:4px;left:4px;z-index:20;background:rgba(0,0,0,.75);color:#0f0;font:11px monospace;padding:2px 6px;border-radius:4px;pointer-events:none';
+        document.getElementById('yt-wrap').parentNode.appendChild(hud);
+      }
+      const end = lengthSecs ? (start + lengthSecs) : '-';
+      hud.innerText = 'pedido: ' + start + 's → ' + end + 's | ahora: ' + t.toFixed(1) + 's';
     }
 
     function endCut(token) {
