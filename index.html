@@ -25,7 +25,7 @@
       color: #fef08a !important;
     }
   </style>
-  <style>iframe#yt-player{position:absolute;top:0;left:0;width:100%;height:100%;border:0}</style>
+  <style>#yt-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}</style>
 </head>
 <body class="p-3 min-h-screen flex flex-col items-center justify-center">
 
@@ -240,7 +240,7 @@
 
     <!-- REPRODUCTOR INTEGRADO CON PERSONAS PENSANDO -->
     <div class="relative w-full pb-[56.25%] bg-black rounded-xl overflow-hidden my-3 border border-slate-800 shadow-inner">
-      <div id="yt-player" class="absolute top-0 left-0 w-full h-full"></div>
+      <div id="yt-wrap" class="absolute top-0 left-0 w-full h-full bg-black"></div>
       
       <!-- PANTALLA NEGRA CON EQUIPOS PENSANDO -->
       <div id="video-curtain" class="absolute inset-0 bg-black flex flex-col items-center justify-center z-10 p-4 transition-opacity duration-300">
@@ -520,7 +520,7 @@
 
       switchPhase('A');
 
-      cueVideo(r.id);
+      destroyPlayer();
       startFaseATimer(60);
     }
 
@@ -653,74 +653,87 @@
 
     // ================= REPRODUCTOR YOUTUBE (IFrame API) =================
     // "duration" = segundos que dura el corte, contados desde "start".
+    // En CADA reproducción se destruye el reproductor anterior y se crea uno nuevo:
+    // así nada puede quedarse sonando ni en bucle de un vídeo al siguiente.
     let ytPlayer = null;
-    let ytReady = false;
-    let pendingCue = null;
-    let cut = null;        // { id, start, end, mode, started }
+    let cut = null;          // { token, mode, start, end, fallbackSet }
     let cutPoll = null;
+    let cutFallback = null;
+    let playToken = 0;
 
     (function loadYT() {
       const tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
       document.head.appendChild(tag);
     })();
-
-    function onYouTubeIframeAPIReady() {
-      ytPlayer = new YT.Player('yt-player', {
-        width: '100%', height: '100%',
-        playerVars: { playsinline: 1, rel: 0 },
-        events: {
-          onReady: () => {
-            ytReady = true;
-            if (pendingCue) { ytPlayer.cueVideoById(pendingCue); pendingCue = null; }
-          }
-        }
-      });
-    }
-
-    function cueVideo(id) {
-      if (ytReady) ytPlayer.cueVideoById(id);
-      else pendingCue = id;
-    }
+    function onYouTubeIframeAPIReady() {}
 
     function clearCut() {
       clearInterval(cutPoll);
+      clearTimeout(cutFallback);
       cutPoll = null;
+      cutFallback = null;
       cut = null;
     }
 
-    function playClip(id, start, lengthSecs, mode) {
+    function destroyPlayer() {
       clearCut();
-      if (!ytReady) { alert('El reproductor de YouTube aún está cargando, inténtalo de nuevo en un momento.'); return; }
-      ytPlayer.loadVideoById({ videoId: id, startSeconds: start || 0 });
-      if (lengthSecs && mode) {
-        cut = { id: id, start: start || 0, end: (start || 0) + lengthSecs, mode: mode, started: false };
-        cutPoll = setInterval(checkCut, 150);
-      }
+      if (ytPlayer) { try { ytPlayer.destroy(); } catch (e) {} ytPlayer = null; }
+      document.getElementById('yt-wrap').innerHTML = '';   // elimina el iframe: se corta imagen y sonido
     }
 
-    // Comprueba el tiempo REAL del vídeo (no un temporizador a ciegas)
-    function checkCut() {
-      if (!cut || !ytReady) return;
-      let t, state, vid;
-      try {
-        t = ytPlayer.getCurrentTime();
-        state = ytPlayer.getPlayerState();
-        vid = ytPlayer.getVideoData().video_id;
-      } catch (e) { return; }
-      if (vid !== cut.id) return;
-      if (!cut.started) {
-        // Esperamos a que el vídeo nuevo esté realmente sonando cerca del inicio
-        if (state === 1 && t >= cut.start - 1 && t < cut.end) cut.started = true;
+    function playClip(id, start, lengthSecs, mode) {
+      destroyPlayer();
+      if (!(window.YT && YT.Player)) {
+        alert('El reproductor de YouTube aún está cargando, inténtalo de nuevo en un momento.');
         return;
       }
-      if (t >= cut.end) endCut();
+      start = Math.floor(start || 0);
+      const token = ++playToken;
+      const hasCut = lengthSecs > 0 && !!mode;
+      if (hasCut) cut = { token: token, mode: mode, start: start, end: start + lengthSecs, fallbackSet: false };
+
+      const vars = { autoplay: 1, playsinline: 1, rel: 0, start: start };
+      if (hasCut) vars.end = start + Math.ceil(lengthSecs);   // YouTube también para solo en ese segundo
+
+      document.getElementById('yt-wrap').innerHTML = '<div id="yt-player"></div>';
+      ytPlayer = new YT.Player('yt-player', {
+        width: '100%', height: '100%', videoId: id, playerVars: vars,
+        events: {
+          onStateChange: (e) => onPlayerState(e, token),
+          onError: (e) => {
+            if (token !== playToken) return;
+            alert('YouTube no puede reproducir este vídeo aquí (código ' + e.data + '). Puede que su dueño no permita incrustarlo.');
+          }
+        }
+      });
+
+      if (hasCut) cutPoll = setInterval(() => checkCut(token), 200);
     }
 
-    function endCut() {
+    function onPlayerState(e, token) {
+      if (!cut || cut.token !== token) return;
+      if (e.data === 0) { endCut(token); return; }                 // ENDED
+      if (e.data === 1 && !cut.fallbackSet) {                       // PLAYING: red de seguridad por reloj
+        cut.fallbackSet = true;
+        let t = cut.start;
+        try { t = ytPlayer.getCurrentTime(); } catch (err) {}
+        const ms = Math.max((cut.end - t) * 1000, 0) + 300;
+        cutFallback = setTimeout(() => endCut(token), ms);
+      }
+    }
+
+    function checkCut(token) {
+      if (!cut || cut.token !== token || !ytPlayer) return;
+      try {
+        if (ytPlayer.getPlayerState() === 1 && ytPlayer.getCurrentTime() >= cut.end) endCut(token);
+      } catch (err) {}
+    }
+
+    function endCut(token) {
+      if (!cut || cut.token !== token) return;
       const mode = cut.mode;
-      clearCut();
-      ytPlayer.stopVideo();   // para imagen y sonido
+      destroyPlayer();                                              // para imagen y sonido de verdad
       const msg = document.getElementById('overlay-msg');
       const btn = document.getElementById('overlay-btn');
       if (mode === 'A') {
@@ -758,7 +771,7 @@
     function endGame() {
       stopFaseATimer();
       clearCut();
-      if (ytReady) ytPlayer.pauseVideo();
+      destroyPlayer();
       
       const t1Name = document.getElementById('t1-name').value || 'Equipo 1';
       const t2Name = document.getElementById('t2-name').value || 'Equipo 2';
