@@ -622,10 +622,14 @@
       
       if (isGameCut) {
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&autoplay=1&playsinline=1`;
+        
+        // Se calcula la duración real restando el tiempo de inicio al tiempo final
+        const playDuration = Math.max((r.duration - r.start), 1) * 1000;
+        
         timer = setTimeout(() => {
           document.getElementById('overlay').classList.remove('hidden');
           document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&playsinline=1`;
-        }, r.duration * 1000);
+        }, playDuration);
       } else {
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?autoplay=1&playsinline=1`;
       }
@@ -656,6 +660,13 @@
 
       if (isGameCut) {
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&autoplay=1&playsinline=1`;
+        
+        const durationSecs = hintObj.duration > hintObj.start ? (hintObj.duration - hintObj.start) : hintObj.duration;
+        
+        timer = setTimeout(() => {
+          document.getElementById('overlay').classList.remove('hidden');
+          document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&playsinline=1`;
+        }, durationSecs * 1000);
       } else {
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?autoplay=1&playsinline=1`;
       }
