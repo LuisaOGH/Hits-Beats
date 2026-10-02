@@ -25,6 +25,7 @@
       color: #fef08a !important;
     }
   </style>
+  <style>iframe#yt-player{position:absolute;top:0;left:0;width:100%;height:100%;border:0}</style>
 </head>
 <body class="p-3 min-h-screen flex flex-col items-center justify-center">
 
@@ -239,7 +240,7 @@
 
     <!-- REPRODUCTOR INTEGRADO CON PERSONAS PENSANDO -->
     <div class="relative w-full pb-[56.25%] bg-black rounded-xl overflow-hidden my-3 border border-slate-800 shadow-inner">
-      <iframe id="yt-iframe" class="absolute top-0 left-0 w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div id="yt-player" class="absolute top-0 left-0 w-full h-full"></div>
       
       <!-- PANTALLA NEGRA CON EQUIPOS PENSANDO -->
       <div id="video-curtain" class="absolute inset-0 bg-black flex flex-col items-center justify-center z-10 p-4 transition-opacity duration-300">
@@ -283,10 +284,8 @@
     <div class="space-y-6 animate-bounce">
       <div class="text-6xl">🎤</div>
       <div class="text-4xl font-black text-pink-500 uppercase tracking-wider">¡TIEMPO!</div>
-      <div class="text-3xl font-extrabold text-white">¡SIGUE CANTANDO!</div>
-      <button onclick="closeOverlay()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold px-6 py-3 rounded-xl text-sm shadow-xl active:scale-95 transition">
-        VER SOLUCIÓN Y SUMAR PUNTOS
-      </button>
+      <div id="overlay-msg" class="text-3xl font-extrabold text-white uppercase"></div>
+      <button id="overlay-btn" onclick="closeOverlay()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold px-6 py-3 rounded-xl text-sm shadow-xl active:scale-95 transition"></button>
     </div>
   </div>
 
@@ -501,7 +500,7 @@
 
     function loadRound(idx) {
       current = idx;
-      clearTimeout(timer);
+      clearCut();
       stopFaseATimer();
       
       const r = rounds[idx];
@@ -521,7 +520,7 @@
 
       switchPhase('A');
 
-      document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?enablejsapi=1&playsinline=1`;
+      cueVideo(r.id);
       startFaseATimer(60);
     }
 
@@ -615,23 +614,13 @@
     }
 
     function playMainSong(isGameCut) {
-      clearTimeout(timer);
       stopFaseATimer();
       showVideoCurtain(false);
       const r = rounds[current];
-      
       if (isGameCut) {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&autoplay=1&playsinline=1`;
-        
-        // Se calcula la duración real restando el tiempo de inicio al tiempo final
-        const playDuration = Math.max((r.duration - r.start), 1) * 1000;
-        
-        timer = setTimeout(() => {
-          document.getElementById('overlay').classList.remove('hidden');
-          document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&playsinline=1`;
-        }, playDuration);
+        playClip(r.id, r.start, r.duration, 'B');
       } else {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?autoplay=1&playsinline=1`;
+        playClip(r.id, 0, 0, null);
       }
     }
 
@@ -652,29 +641,103 @@
     }
 
     function playHintSong(num, isGameCut) {
-      clearTimeout(timer);
       stopFaseATimer();
       showVideoCurtain(false);
-      const r = rounds[current];
-      const hintObj = r.hints[num - 1];
-
+      const hintObj = rounds[current].hints[num - 1];
       if (isGameCut) {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&autoplay=1&playsinline=1`;
-        
-        const durationSecs = hintObj.duration > hintObj.start ? (hintObj.duration - hintObj.start) : hintObj.duration;
-        
-        timer = setTimeout(() => {
-          document.getElementById('overlay').classList.remove('hidden');
-          document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&playsinline=1`;
-        }, durationSecs * 1000);
+        playClip(hintObj.id, hintObj.start, hintObj.duration, 'A');
       } else {
-        document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?autoplay=1&playsinline=1`;
+        playClip(hintObj.id, 0, 0, null);
       }
     }
 
+    // ================= REPRODUCTOR YOUTUBE (IFrame API) =================
+    // "duration" = segundos que dura el corte, contados desde "start".
+    let ytPlayer = null;
+    let ytReady = false;
+    let pendingCue = null;
+    let cut = null;        // { id, start, end, mode, started }
+    let cutPoll = null;
+
+    (function loadYT() {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    })();
+
+    function onYouTubeIframeAPIReady() {
+      ytPlayer = new YT.Player('yt-player', {
+        width: '100%', height: '100%',
+        playerVars: { playsinline: 1, rel: 0 },
+        events: {
+          onReady: () => {
+            ytReady = true;
+            if (pendingCue) { ytPlayer.cueVideoById(pendingCue); pendingCue = null; }
+          }
+        }
+      });
+    }
+
+    function cueVideo(id) {
+      if (ytReady) ytPlayer.cueVideoById(id);
+      else pendingCue = id;
+    }
+
+    function clearCut() {
+      clearInterval(cutPoll);
+      cutPoll = null;
+      cut = null;
+    }
+
+    function playClip(id, start, lengthSecs, mode) {
+      clearCut();
+      if (!ytReady) { alert('El reproductor de YouTube aún está cargando, inténtalo de nuevo en un momento.'); return; }
+      ytPlayer.loadVideoById({ videoId: id, startSeconds: start || 0 });
+      if (lengthSecs && mode) {
+        cut = { id: id, start: start || 0, end: (start || 0) + lengthSecs, mode: mode, started: false };
+        cutPoll = setInterval(checkCut, 150);
+      }
+    }
+
+    // Comprueba el tiempo REAL del vídeo (no un temporizador a ciegas)
+    function checkCut() {
+      if (!cut || !ytReady) return;
+      let t, state, vid;
+      try {
+        t = ytPlayer.getCurrentTime();
+        state = ytPlayer.getPlayerState();
+        vid = ytPlayer.getVideoData().video_id;
+      } catch (e) { return; }
+      if (vid !== cut.id) return;
+      if (!cut.started) {
+        // Esperamos a que el vídeo nuevo esté realmente sonando cerca del inicio
+        if (state === 1 && t >= cut.start - 1 && t < cut.end) cut.started = true;
+        return;
+      }
+      if (t >= cut.end) endCut();
+    }
+
+    function endCut() {
+      const mode = cut.mode;
+      clearCut();
+      ytPlayer.stopVideo();   // para imagen y sonido
+      const msg = document.getElementById('overlay-msg');
+      const btn = document.getElementById('overlay-btn');
+      if (mode === 'A') {
+        msg.innerText = 'EL GANADOR PASA A LA FASE B';
+        btn.innerText = 'CONTINUAR';
+      } else {
+        msg.innerText = 'SIGUE CANTANDO Y COMPRUEBA SI HAS ACERTADO';
+        btn.innerText = 'VER SOLUCIÓN Y SUMAR PUNTOS';
+      }
+      btn.dataset.mode = mode;
+      document.getElementById('overlay').classList.remove('hidden');
+    }
+
     function closeOverlay() {
+      const mode = document.getElementById('overlay-btn').dataset.mode;
       document.getElementById('overlay').classList.add('hidden');
-      document.getElementById('hint-box').classList.remove('hidden');
+      if (mode === 'B') document.getElementById('hint-box').classList.remove('hidden');
     }
 
     function changeRound(dir) {
@@ -694,7 +757,8 @@
 
     function endGame() {
       stopFaseATimer();
-      clearTimeout(timer);
+      clearCut();
+      if (ytReady) ytPlayer.pauseVideo();
       
       const t1Name = document.getElementById('t1-name').value || 'Equipo 1';
       const t2Name = document.getElementById('t2-name').value || 'Equipo 2';
