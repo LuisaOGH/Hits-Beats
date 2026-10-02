@@ -7,8 +7,23 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background-color: #0b0f19; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    body { 
+      background-color: #0b0f19; 
+      color: #f8fafc; 
+      font-family: system-ui, -apple-system, sans-serif;
+      padding-bottom: 80px;
+    }
     .bg-card { background-color: #161e2e; }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 5px #f59e0b; }
+      50% { box-shadow: 0 0 20px #f59e0b; transform: scale(1.02); }
+    }
+    .btn-pista-glow {
+      animation: pulse-glow 1.5s infinite;
+      border-color: #f59e0b !important;
+      background-color: #78350f !important;
+      color: #fef08a !important;
+    }
   </style>
 </head>
 <body class="p-3 min-h-screen flex flex-col items-center justify-center">
@@ -25,8 +40,11 @@
       Hits & Beats
     </h1>
 
-    <div class="text-lg md:text-xl font-extrabold text-amber-300 uppercase tracking-widest bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-full mb-6 shadow-lg">
-      ✨ Cumple de Marta y Marisa ✨
+    <div class="text-lg md:text-xl font-extrabold text-amber-300 uppercase tracking-widest bg-amber-500/10 border border-amber-500/30 px-6 py-3 rounded-2xl mb-6 shadow-lg leading-snug">
+      <div>Cumpleaños</div>
+      <div>Marta</div>
+      <div class="text-pink-400">&</div>
+      <div>Marisa</div>
     </div>
 
     <p class="text-xs text-slate-400 max-w-xs mb-6">
@@ -38,7 +56,6 @@
         ¡EMPEZAR EL CONCURSO! 🚀
       </button>
 
-      <!-- BOTÓN DE INSTRUCCIONES -->
       <button onclick="toggleRulesModal(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold py-2.5 px-4 rounded-xl text-xs border border-amber-500/30 active:scale-95 transition flex items-center justify-center gap-2">
         <i class="fa-solid fa-scroll"></i> Reglas de Juego e Instrucciones
       </button>
@@ -47,7 +64,7 @@
 
   <!-- MODAL DE REGLAS DEL JUEGO -->
   <div id="rules-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-card border border-slate-700 w-full max-w-md rounded-2xl p-5 shadow-2xl relative text-left">
+    <div class="bg-card border border-slate-700 w-full max-w-md rounded-2xl p-5 shadow-2xl relative text-left max-h-[90vh] overflow-y-auto">
       
       <button onclick="toggleRulesModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
         <i class="fa-solid fa-xmark"></i>
@@ -61,19 +78,16 @@
         <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
           <span class="font-extrabold text-pink-400 block text-sm mb-1">🎤 Fase A: Palabra Furia</span>
           <ul class="list-disc list-inside space-y-1">
-            <li><strong>+1 punto:</strong> Si el equipo canta una canción válida que contenga la palabra sin usar ninguna pista.</li>
-            <li><strong>0 puntos:</strong> Si usan pista de pista/cantante. Sin embargo, usarlas les da <strong>derecho directo a jugar la Fase B</strong>.</li>
+            <li><strong>2 puntos:</strong> Si aciertan sin ninguna pista.</li>
+            <li><strong>1 punto:</strong> Si aciertan usando la pista del <strong>Cantante</strong>.</li>
+            <li><strong>0 puntos:</strong> Si usan la pista de la <strong>Canción</strong>, pero conservan el turno para jugar la Fase B.</li>
           </ul>
         </div>
 
         <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
           <span class="font-extrabold text-purple-400 block text-sm mb-1">🎵 Fase B: Sigue la Letra</span>
-          <p>
-            Suena el fragmento del temazo. Cuando el tiempo termine, hay que continuar la letra.
-          </p>
-          <p class="mt-1">
-            <strong>+2 puntos:</strong> Si el equipo acierta cómo sigue la letra exactamente.
-          </p>
+          <p class="mb-1">El equipo con el turno juega la Fase B.</p>
+          <p><strong>+2 puntos:</strong> Si el equipo acierta la continuación de la letra tras el corte de audio.</p>
         </div>
 
         <div class="bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 font-semibold text-[11px] text-center">
@@ -84,7 +98,6 @@
       <button onclick="toggleRulesModal(false)" class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs border border-slate-700 active:scale-95 transition">
         Entendido 👍
       </button>
-
     </div>
   </div>
 
@@ -95,7 +108,7 @@
     </h1>
   </header>
 
-  <!-- MARCADOR -->
+  <!-- MARCADOR DE PUNTOS -->
   <div class="grid grid-cols-2 gap-2 w-full max-w-md mb-3">
     <div class="bg-card p-2 rounded-xl border border-slate-800 text-center">
       <input type="text" value="Equipo 1" class="bg-transparent text-center font-bold text-sm text-pink-400 w-full outline-none border-b border-pink-500/30 pb-1 mb-1" id="t1-name">
@@ -115,115 +128,157 @@
     </div>
   </div>
 
-  <!-- TARJETA DEL JUEGO -->
+  <!-- TARJETA PRINCIPAL DEL JUEGO -->
   <div class="bg-card w-full max-w-md rounded-2xl p-4 border border-slate-800 relative shadow-xl">
     
-    <button onclick="toggleHint()" class="absolute top-4 right-4 text-slate-400 hover:text-amber-400 transition text-lg">
+    <button onclick="toggleHint()" class="absolute top-4 right-4 text-slate-400 hover:text-amber-400 transition text-lg" title="Ver solución de la letra">
       <i class="fa-solid fa-eye"></i>
     </button>
 
     <span id="r-num" class="inline-block bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-extrabold px-3 py-1 rounded-full mb-3">
-      Ronda 1 / 20
+      Ronda 1 / 16
     </span>
 
-    <!-- FASE A -->
-    <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">
-      Fase A: Cantar Canción con la Palabra
-    </div>
-    <div id="r-word" class="text-2xl font-black text-pink-500 tracking-wide uppercase mb-2">
-      CORAZÓN
+    <!-- PESTAÑAS PARA ALTERNAR ENTRE FASE A Y FASE B -->
+    <div class="grid grid-cols-2 gap-1 bg-slate-900 p-1 rounded-xl mb-3 border border-slate-800">
+      <button id="tab-a-btn" onclick="switchPhase('A')" class="py-2 rounded-lg text-xs font-extrabold bg-pink-600 text-white shadow transition">
+        🎤 Fase A (Palabra)
+      </button>
+      <button id="tab-b-btn" onclick="switchPhase('B')" class="py-2 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition">
+        🎵 Fase B (Letra)
+      </button>
     </div>
 
-    <!-- PISTAS FASE A -->
-    <button onclick="toggleWordHints()" class="w-full bg-slate-800/80 hover:bg-slate-800 text-xs font-bold text-amber-400 py-1.5 px-3 rounded-lg border border-amber-500/30 flex items-center justify-between mb-3">
-      <span><i class="fa-solid fa-lightbulb mr-1.5"></i> Pistas de canciones sugeridas</span>
-      <i id="word-hint-icon" class="fa-solid fa-chevron-down"></i>
-    </button>
-
-    <div id="word-hints-box" class="hidden bg-slate-900/90 rounded-xl p-2.5 border border-slate-800 mb-3 space-y-2">
-      
-      <!-- Pista 1 -->
-      <div class="bg-slate-800/50 p-2 rounded-lg space-y-1.5">
-        <div class="flex items-center justify-between gap-1 flex-wrap">
-          <button onclick="revealArtist(1)" class="bg-slate-700 hover:bg-slate-600 text-amber-300 text-[11px] font-bold px-2 py-1 rounded-md active:scale-95 transition">
-            <i class="fa-solid fa-user-ninja mr-1"></i> ¿Quién canta?
-          </button>
-          <div class="flex gap-1">
-            <button onclick="playHintSong(1, false)" class="bg-pink-700 hover:bg-pink-800 text-white text-[11px] font-bold px-2 py-1 rounded-md active:scale-95 transition" title="Reproducir completo desde inicio">
-              <i class="fa-solid fa-play mr-1"></i> Completo
-            </button>
-            <button onclick="playHintSong(1, true)" class="bg-pink-600 hover:bg-pink-700 text-white text-[11px] font-bold px-2 py-1 rounded-md active:scale-95 transition" title="Reproducir trozo del juego">
-              <i class="fa-solid fa-scissors mr-1"></i> Corte
-            </button>
-          </div>
+    <!-- PANEL FASE A -->
+    <div id="panel-a" class="space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider">
+          Palabra Furia
         </div>
-        <div id="artist-info-1" class="hidden text-xs font-semibold text-slate-300 bg-slate-900/80 p-1.5 rounded border border-slate-700"></div>
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-lg">
+          <i class="fa-solid fa-stopwatch text-amber-400 text-xs"></i>
+          <span id="fasea-timer" class="text-sm font-black text-amber-300 font-mono">60s</span>
+          <button id="timer-toggle-btn" onclick="toggleFaseATimer()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-1.5 py-0.5 rounded border border-slate-600 ml-1">
+            Parar
+          </button>
+        </div>
       </div>
 
-      <!-- Pista 2 -->
-      <div class="bg-slate-800/50 p-2 rounded-lg space-y-1.5">
-        <div class="flex items-center justify-between gap-1 flex-wrap">
-          <button onclick="revealArtist(2)" class="bg-slate-700 hover:bg-slate-600 text-amber-300 text-[11px] font-bold px-2 py-1 rounded-md active:scale-95 transition">
-            <i class="fa-solid fa-user-ninja mr-1"></i> ¿Quién canta?
-          </button>
-          <div class="flex gap-1">
-            <button onclick="playHintSong(2, false)" class="bg-purple-700 hover:bg-purple-800 text-white text-[11px] font-bold px-2 py-1 rounded-md active:scale-95 transition" title="Reproducir completo desde inicio">
-              <i class="fa-solid fa-play mr-1"></i> Completo
-            </button>
-            <button onclick="playHintSong(2, true)" class="bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold px-2 py-1 rounded-md active:scale-95 transition" title="Reproducir trozo del juego">
-              <i class="fa-solid fa-scissors mr-1"></i> Corte
-            </button>
-          </div>
-        </div>
-        <div id="artist-info-2" class="hidden text-xs font-semibold text-slate-300 bg-slate-900/80 p-1.5 rounded border border-slate-700"></div>
+      <div id="r-word" class="text-2xl font-black text-pink-500 tracking-wide uppercase">
+        CORAZÓN
       </div>
 
+      <!-- PISTAS EN FASES -->
+      <button id="word-hint-btn" onclick="triggerPistaClick()" class="w-full bg-slate-800/80 hover:bg-slate-800 text-xs font-bold text-amber-400 py-2 px-3 rounded-lg border border-amber-500/30 flex items-center justify-between transition">
+        <span><i class="fa-solid fa-lightbulb mr-1.5"></i> Pistas de la canción</span>
+        <i id="word-hint-icon" class="fa-solid fa-chevron-down"></i>
+      </button>
+
+      <div id="word-hints-box" class="hidden bg-slate-900/90 rounded-xl p-3 border border-slate-800 space-y-2.5">
+        <!-- Fase 1: Cantante -->
+        <div class="bg-slate-800/60 p-2.5 rounded-lg space-y-1.5 border border-slate-700/50">
+          <div class="flex items-center justify-between gap-1 flex-wrap">
+            <span class="text-[10px] text-amber-400 font-bold uppercase">Pista 1 (Vale 1 pt)</span>
+            <button onclick="revealArtist(1)" class="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-md active:scale-95 transition">
+              <i class="fa-solid fa-user-ninja mr-1"></i> ¿Quién canta?
+            </button>
+          </div>
+          <div id="artist-info-1" class="hidden text-xs font-semibold text-slate-200 bg-slate-900 p-2 rounded border border-slate-700"></div>
+        </div>
+
+        <!-- Fase 2: Título Canción -->
+        <div class="bg-slate-800/60 p-2.5 rounded-lg space-y-1.5 border border-slate-700/50">
+          <div class="flex items-center justify-between gap-1 flex-wrap">
+            <span class="text-[10px] text-pink-400 font-bold uppercase">Pista 2 (0 pts - Conserva turno B)</span>
+            <button onclick="revealSongTitle(1)" class="bg-pink-600 hover:bg-pink-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-md active:scale-95 transition">
+              <i class="fa-solid fa-music mr-1"></i> ¿Qué canción es?
+            </button>
+          </div>
+          <div id="song-title-info-1" class="hidden text-xs font-semibold text-slate-200 bg-slate-900 p-2 rounded border border-slate-700"></div>
+        </div>
+
+        <!-- Reproducción de pista en audio -->
+        <div class="pt-1 flex justify-end gap-1.5">
+          <button onclick="playHintSong(1, false)" class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold px-2 py-1 rounded active:scale-95 transition">
+            <i class="fa-solid fa-play mr-1"></i> Audio completo
+          </button>
+          <button onclick="playHintSong(1, true)" class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold px-2 py-1 rounded active:scale-95 transition">
+            <i class="fa-solid fa-scissors mr-1"></i> Audio corte
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL FASE B (Oculto por defecto) -->
+    <div id="panel-b" class="space-y-3 hidden">
+      <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider">
+        Sigue la Letra
+      </div>
+      <div id="r-song" class="text-base font-bold text-white">
+        Vicco - Nochentera
+      </div>
+
+      <!-- BOTONES REPRODUCCIÓN FASE B -->
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="playMainSong(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition">
+          <i class="fa-solid fa-play text-emerald-400"></i> Reproducir Completo
+        </button>
+        <button onclick="playMainSong(true)" class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition">
+          <i class="fa-solid fa-scissors text-amber-300"></i> Corte Juego ⏳
+        </button>
+      </div>
+
+      <!-- SOLUCIÓN FASE B -->
+      <div id="hint-box" class="hidden bg-slate-900/90 border-l-4 border-amber-400 p-3 rounded-lg text-xs text-slate-300">
+        <span class="font-bold text-amber-400 block mb-1">Letra a continuar:</span>
+        <p id="r-hint"></p>
+      </div>
     </div>
 
     <div class="border-t border-slate-800 my-3"></div>
 
-    <!-- FASE B -->
-    <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">
-      Fase B: Sigue la Letra
-    </div>
-    <div id="r-song" class="text-base font-bold text-white mb-2">
-      Vicco - Nochentera
-    </div>
-
-    <!-- BOTONES REPRODUCCIÓN FASE B -->
-    <div class="grid grid-cols-2 gap-2 mb-3">
-      <button onclick="playMainSong(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition">
-        <i class="fa-solid fa-play text-emerald-400"></i> Reproducir Completo
-      </button>
-      <button onclick="playMainSong(true)" class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition">
-        <i class="fa-solid fa-scissors text-amber-300"></i> Corte Juego ⏳
-      </button>
-    </div>
-
-    <!-- REPRODUCTOR INTEGRADO DE YOUTUBE -->
+    <!-- REPRODUCTOR INTEGRADO CON PERSONAS PENSANDO -->
     <div class="relative w-full pb-[56.25%] bg-black rounded-xl overflow-hidden my-3 border border-slate-800 shadow-inner">
       <iframe id="yt-iframe" class="absolute top-0 left-0 w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      
+      <!-- PANTALLA NEGRA CON EQUIPOS PENSANDO -->
+      <div id="video-curtain" class="absolute inset-0 bg-black flex flex-col items-center justify-center z-10 p-4 transition-opacity duration-300">
+        <div class="flex items-center justify-center gap-6 mb-2">
+          <!-- Grupo 1 -->
+          <div class="flex flex-col items-center">
+            <div class="text-3xl md:text-4xl">👥🤔💭🎶</div>
+            <span class="text-[10px] text-pink-400 font-bold uppercase mt-1">Equipo 1</span>
+          </div>
+          
+          <div class="text-amber-400 font-black text-xl">VS</div>
+          
+          <!-- Grupo 2 -->
+          <div class="flex flex-col items-center">
+            <div class="text-3xl md:text-4xl">🎶💭🤔👥</div>
+            <span class="text-[10px] text-purple-400 font-bold uppercase mt-1">Equipo 2</span>
+          </div>
+        </div>
+        <p class="text-xs text-slate-400 font-semibold tracking-wide">¡Adivina la canción!</p>
+      </div>
     </div>
 
-    <!-- SOLUCIÓN FASE B -->
-    <div id="hint-box" class="hidden bg-slate-900/90 border-l-4 border-amber-400 p-3 rounded-lg text-xs text-slate-300 my-2">
-      <span class="font-bold text-amber-400 block mb-1">Letra a continuar:</span>
-      <p id="r-hint"></p>
-    </div>
-
-    <!-- CONTROLES DE NAVEGACIÓN -->
-    <div class="flex justify-between gap-2 mt-4">
-      <button onclick="changeRound(-1)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-sm border border-slate-700 active:scale-95 transition">
+    <!-- CONTROLES DE NAVEGACIÓN Y FINALIZAR JUEGO -->
+    <div class="flex justify-between gap-2 mt-4 mb-2">
+      <button onclick="changeRound(-1)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs border border-slate-700 active:scale-95 transition shadow-lg">
         <i class="fa-solid fa-arrow-left mr-1"></i> Anterior
       </button>
-      <button onclick="changeRound(1)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-sm border border-slate-700 active:scale-95 transition">
+      <button onclick="changeRound(1)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs border border-slate-700 active:scale-95 transition shadow-lg">
         Siguiente <i class="fa-solid fa-arrow-right ml-1"></i>
       </button>
     </div>
 
+    <button onclick="endGame()" class="w-full mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-lg active:scale-95 transition border border-amber-400/50">
+      🏆 Final de Juego
+    </button>
+
   </div>
 
-  <!-- PANTALLA SUPERPUESTA "¡SIGUE CANTANDO!" -->
+  <!-- PANTALLA SUPERPUESTA "¡TIEMPO! - CORTE JUEGO" -->
   <div id="overlay" class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center p-6 hidden z-50 text-center">
     <div class="space-y-6 animate-bounce">
       <div class="text-6xl">🎤</div>
@@ -235,223 +290,191 @@
     </div>
   </div>
 
+  <!-- PANTALLA SUPERPUESTA "¿QUIERES UNA PISTA?" -->
+  <div id="pista-overlay" class="fixed inset-0 bg-black/90 flex flex-col items-center justify-center p-6 hidden z-50 text-center">
+    <div class="bg-slate-900 border border-amber-500/50 p-6 rounded-2xl max-w-xs space-y-4 shadow-2xl">
+      <div class="text-5xl animate-bounce">💡</div>
+      <div class="text-2xl font-black text-amber-400 uppercase">¿Quieres una pista?</div>
+      <p class="text-xs text-slate-300">
+        Han pasado los 60 segundos sin acierto. Pulsa para ver las pistas y reiniciar el tiempo.
+      </p>
+      <button onclick="closePistaOverlay()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3 px-4 rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg">
+        VER PISTAS AHORA 🔍
+      </button>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE GANADOR (FINAL DE JUEGO) -->
+  <div id="winner-modal" class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center p-6 hidden z-50 text-center">
+    <div class="bg-slate-900 border-2 border-amber-400 p-8 rounded-3xl max-w-sm w-full space-y-6 shadow-2xl relative">
+      <div class="text-6xl animate-bounce">🏆</div>
+      <div id="winner-title" class="text-2xl font-black text-amber-400 uppercase tracking-wide leading-snug">
+        <!-- Rellenado con JS -->
+      </div>
+      <div id="winner-score" class="text-lg font-extrabold text-slate-200">
+        <!-- Rellenado con JS -->
+      </div>
+      <button onclick="closeWinnerModal()" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-black py-3 px-4 rounded-2xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg">
+        Volver al juego
+      </button>
+    </div>
+  </div>
+
   <script>
     const rounds = [
       { 
         word: "CORAZÓN", 
         hints: [
-          { artist: "Alejandro Sanz", title: "C...... P.....", id: "ZMUqIoDtSwc", start: 65, duration: 30 },
-          { artist: "Enrique Iglesias", title: "D.... E. C......", id: "xFutjZEBTXs", start: 30, duration: 30 }
+          { artist: "Alejandro Sanz", title: "Corazón Partío", id: "ZMUqIoDtSwc", start: 116, duration: 32 }
         ],
         song: "Vicco - Nochentera", 
         id: "1j_dSNUGU-U", 
-        start: 35, 
-        duration: 15, 
-        hint: "...se fue la duda. Me gusta tu cara, me gusta tu pelo..." 
+        start: 57, 
+        duration: 65, 
+        hint: "...lo que pase aquí, aquí se queda..." 
       },
       { 
-        word: "ISLA", 
+        word: "DANCE", 
         hints: [
-          { artist: "Manuel Carrasco & Camilo", title: "S......", id: "MsWBCOcOYAY", start: 30, duration: 30 },
-          { artist: "Quevedo", title: "L. G.......", id: "LZPLBSRnxSY", start: 35, duration: 30 }
+          { artist: "Dua Lipa", title: "Dance the night", id: "OiC1rgCPmUQ", start: 56, duration: 58 }
         ],
         song: "Manuel Turizo - La Bachata", 
         id: "TiM_TFpT_DE", 
-        start: 30, 
-        duration: 18, 
-        hint: "...andaba manejando por las calles que me llevaban a ti..."
+        start: 53, 
+        duration: 111, 
+        hint: "...oyendo las canciones que un día me dedicaste..."
       },
       { 
         word: "REINA", 
         hints: [
-          { artist: "Lola Indigo", title: "L. R....", id: "g_GB6ADqjOU", start: 40, duration: 30 },
-          { artist: "Dua Lipa", title: "D.... T.. N....", id: "OiC1rgCPmUQ", start: 40, duration: 30 }
+          { artist: "Lola Índigo", title: "La reina", id: "g_GB6ADqjOU", start: 0, duration: 42 }
         ],
         song: "Manuel Carrasco & Camilo - Salitre", 
         id: "MsWBCOcOYAY", 
-        start: 30, 
-        duration: 18, 
-        hint: "...tengo la piel llena de salitre de tanto esperarte a la orilla del mar..." 
+        start: 223, 
+        duration: 78, 
+        hint: "...y tú eres una de ellas..." 
       },
       { 
-        word: "NOCHE", 
+        word: "LATIDOS", 
         hints: [
-          { artist: "Dua Lipa", title: "D.... S.... N..", id: "oygrmJFKYZY", start: 40, duration: 30 },
-          { artist: "Rauw Alejandro", title: "T... D. T.", id: "CFPLIaMpGrY", start: 30, duration: 30 }
+          { artist: "Rauw Alejandro", title: "Todo De Ti", id: "CFPLIaMpGrY", start: 110, duration: 100 }
         ],
-	song: "Quevedo - La Última (La Graciosa)", 
+        song: "Quevedo - La Última (La Graciosa)", 
         id: "LZPLBSRnxSY", 
-        start: 45, 
-        duration: 18, 
-        hint: "...y de La Graciosa me fui pa' La Palma, donde el mar nos calma..." 
+        start: 23, 
+        duration: 114, 
+        hint: "...a tu vida le falta sabor, vente mami que yo la puedo sazonar..." 
       },
       { 
         word: "BAILAR", 
         hints: [
-          { artist: "Enrique Iglesias", title: "B.......", id: "NUsoVlDFqZg", start: 50, duration: 30 },
-          { artist: "Elvis Crespo", title: "B.....", id: "9cBtJYI6itg", start: 35, duration: 30 }
+          { artist: "Enrique Iglesias", title: "Bailando", id: "NUsoVlDFqZg", start: 103, duration: 30 }
         ],
         song: "Aitana - Las Babys", 
         id: "02d2P0KZWDk", 
-        start: 20, 
-        duration: 18, 
-        hint: "...quiero bailar con mis babys toda la noche entera..." 
+        start: 52, 
+        duration: 139, 
+        hint: "...de fiesta con la casa llena, otra vez..." 
       },
       { 
-        word: "AMOR", 
+        word: "MARÍA", 
         hints: [
-          { artist: "David Bisbal", title: "A.. M....", id: "gra-sIV1n4U", start: 30, duration: 30 },
-          { artist: "Camilo", title: "V... D. R...", id: "qKp1f7Vn9dM", start: 40, duration: 30 }
+          { artist: "David Bisbal", title: "Ave María", id: "gra-sIV1n4U", start: 0, duration: 30 }
         ],
         song: "Karol G - Si Antes Te Hubiera Conocido", 
         id: "MgsdDfdGdHc", 
-        start: 25, 
-        duration: 17, 
-        hint: "...qué hubiera sido, si antes te hubiera conocido..." 
+        start: 211, 
+        duration: 39, 
+        hint: "...pa presentarte como mi marido..." 
       },
       { 
-        word: "BESO", 
+        word: "BESOS", 
         hints: [
-          { artist: "El Canto del Loco", title: "B....", id: "mzSI1oUXYxs", start: 35, duration: 30 },
-          { artist: "Natti Natasha", title: "M. G....", id: "ZZHZLMO0xc0", start: 25, duration: 30 }
+          { artist: "El Canto del Loco", title: "Besos", id: "mzSI1oUXYxs", start: 22, duration: 28 }
         ],
         song: "Rosalía - DESPECHÁ", 
         id: "5g2hT4GmAGU", 
-        start: 15, 
-        duration: 17, 
-        hint: "...hoy me salgo con mi combo de despechá..."
+        start: 8, 
+        duration: 106, 
+        hint: "...mira qué fácil te lo voy a decir A B C, 1 2 3..."
       },
       { 
-        word: "SOL", 
+        word: "HOY", 
         hints: [
-          { artist: "Sebastián Yatra", title: "T...... R....", id: "Qz9gmiLBVFA", start: 40, duration: 30 },
-          { artist: "Álvaro Soler", title: "E. M.... S..", id: "aNHwNreDp3A", start: 30, duration: 30 }
+          { artist: "David Bisbal y Sebastian Yatra", title: "A partir de hoy", id: "Iwz4P8HfGVM", start: 23, duration: 81 }
         ],
-	song: "David Bisbal y Sebastian Yatra - A partir de hoy", 
-        id: "Iwz4P8HfGVM", 
-        start: 40, 
-        duration: 18, 
-        hint: "...yo quiero un beso, de esos que tú me das..." 
+        song: "Sebastian Yatra - Tacones Rojos", 
+        id: "Qz9gmiLBVFA", 
+        start: 22, 
+        duration: 93, 
+        hint: "...no esperaba enamorarme de tí, ni tú de mí..." 
       },
       { 
-        word: "FIESTA", 
+        word: "BIEN", 
         hints: [
-          { artist: "Pedro Capó", title: "L. F.....", id: "WEbC750-vzc", start: 30, duration: 30 },
-          { artist: "Rosalía", title: "D.......", id: "5g2hT4GmAGU", start: 45, duration: 30 }
+          { artist: "Hombres G", title: "Voy a pasármelo bien", id: "8gLUhCTvZco", start: 0, duration: 36 }
         ],
-        song: "Quevedo - Columbia", 
-        id: "QlZNGcVfeF0", 
-        start: 40, 
-        duration: 18, 
-        hint: "...y se nos hizo de día, bailando bajo el sol..." 
+        song: "Familia viral - Dama y Vagabundo", 
+        id: "YMUpzNObuJg", 
+        start: 43, 
+        duration: 66, 
+        hint: "...y se nos hizo de día,<br>bailando bajo el sol..." 
       },
       { 
         word: "MADRID", 
         hints: [
-          { artist: "Ana Mena", title: "M..... C...", id: "sh2lLZBnrfA", start: 35, duration: 30 },
-          { artist: "Aitana & Zoilo", title: "M.. A.....", id: "V3FAVbrc598", start: 30, duration: 30 }
+          { artist: "Ana Mena", title: "Madrid City", id: "sh2lLZBnrfA", start: 115, duration: 90 }
         ],
         song: "Ana Mena & Belinda - Las Doce", 
         id: "ZwZfcO3zhg0", 
-        start: 30, 
-        duration: 17, 
-        hint: "...en Madrid City me perdí buscando tu mirada..." 
+        start: 0, 
+        duration: 42, 
+        hint: "...a quién llamo cuando lleguen las doce..." 
       },
       { 
         word: "LLORAR", 
         hints: [
-          { artist: "Shakira BZRP", title: "B... M.... S.......", id: "CocEMWdc7Ck", start: 35, duration: 30 },
-          { artist: "Aitana", title: "V.. A Q.......", id: "e8vI0pYLcYU", start: 40, duration: 30 }
+          { artist: "Shakira & BZRP", title: "Bzrp Music Sessions Vol. 53", id: "CocEMWdc7Ck", start: 105, duration: 31 }
         ],
         song: "Aitana & Danna Paola - AQYNE", 
         id: "WG1jjZQM7d8", 
-        start: 35, 
-        duration: 17, 
-        hint: "...ahora que ya no estás, bailo para no llorar..." 
+        start: 39, 
+        duration: 90, 
+        hint: "...por tus malos chistes y tu inmadurez..." 
       },
       { 
-        word: "BOCA", 
+        word: "SUMMER", 
         hints: [
-          { artist: "Melendi", title: "Caminando por la vida", id: "NUsoVlDFqZg", start: 35, duration: 30 },
-          { artist: "Chayanne", title: "Torero", id: "3f3kXp0Q8pQ", start: 40, duration: 30 }
+          { artist: "Taylor Swift", title: "Cruel Summer", id: "e9Ru3OYPi04", start: 50, duration: 65 }
         ],
-        song: "Myke Towers - LALA", 
-        id: "3f3kXp0Q8pQ", 
-        start: 20, 
-        duration: 18, 
-        hint: "...cuando te vi en la pista bailando pegadito..." 
+        song: "Ana Mena y Lola Índigo - Patito", 
+        id: "52cnhvRR6h4", 
+        start: 56, 
+        duration: 62, 
+        hint: "...me dices me caso, te digo que sí..." 
       },
       { 
-        word: "LUNA", 
+        word: "DIVA", 
         hints: [
-          { artist: "Mecano", title: "Hijo de la Luna", id: "NUsoVlDFqZg", start: 50, duration: 30 },
-          { artist: "Juanes", title: "La Camisa Negra", id: "3f3kXp0Q8pQ", start: 35, duration: 30 }
+          { artist: "Melody", title: "Esa diva", id: "2J9xYVcP4MA", start: 100, duration: 15 }
         ],
-        song: "Sebastián Yatra - Tacones Rojos", 
-        id: "8S7e1kZ0N4E", 
-        start: 25, 
-        duration: 17, 
-        hint: "...mi pedazo de sol, la que me da calor..."
-      },
-      { 
-        word: "CASA", 
-        hints: [
-          { artist: "La Raíz", title: "Nos volveremos a ver", id: "NUsoVlDFqZg", start: 40, duration: 30 },
-          { artist: "Morat", title: "No se va", id: "3f3kXp0Q8pQ", start: 35, duration: 30 }
-        ],
-        song: "C. Tangana - Tú Me Dejaste De Querer", 
-        id: "V9X3j1t2C_4", 
-        start: 35, 
-        duration: 17, 
-        hint: "...cuando menos lo esperaba, te marchaste de casa..." 
-      },
-      { 
-        word: "AMIGA", 
-        hints: [
-          { artist: "Amaral", title: "Marta, Sebas, Guille y los demás", id: "NUsoVlDFqZg", start: 40, duration: 30 },
-          { artist: "Don Omar", title: "Danza Kuduro", id: "3f3kXp0Q8pQ", start: 30, duration: 30 }
-        ],
-        song: "Lola Índigo - LA REINA", 
-        id: "8S7e1kZ0N4E", 
-        start: 25, 
-        duration: 17, 
-        hint: "...con mi amiga en la pista bailando sin parar..." 
-      },
-      { 
-        word: "CARA", 
-        hints: [
-          { artist: "Hombres G", title: "Devuélveme a mi chica", id: "NUsoVlDFqZg", start: 30, duration: 30 },
-          { artist: "Viva Suecia", title: "El Bien", id: "3f3kXp0Q8pQ", start: 45, duration: 30 }
-        ],
-        song: "Bizarrap & Quevedo - Bzrp Music Sessions #52", 
-        id: "A_g34Y3_3vM", 
-        start: 55, 
-        duration: 17, 
-        hint: "...quédate, que las noches sin ti duelen..." 
-      },
-      { 
-        word: "MÚSICA", 
-        hints: [
-          { artist: "Fangoria", title: "Dramas y Comedias", id: "NUsoVlDFqZg", start: 40, duration: 30 },
-          { artist: "Carlos Vives", title: "La Bicicleta", id: "3f3kXp0Q8pQ", start: 35, duration: 30 }
-        ],
-        song: "Bad Gyal - Chulo pt.2", 
-        id: "8S7e1kZ0N4E", 
-        start: 20, 
-        duration: 18, 
-        hint: "...con la música alta perreando en el club..." 
+        song: "Aitana - Superestrella", 
+        id: "vz_vU53JvvI", 
+        start: 56, 
+        duration: 77, 
+        hint: "...sólo quiero conocerte un poco más..." 
       },
       { 
         word: "VOLVER", 
         hints: [
-          { artist: "Bunbury", title: "Lady Blue", id: "NUsoVlDFqZg", start: 45, duration: 30 },
-          { artist: "Shakira", title: "Antología", id: "3f3kXp0Q8pQ", start: 35, duration: 30 }
+          { artist: "Morat", title: "Cómo Te Atreves", id: "_gm5piKnrS4", start: 101, duration: 41 }
         ],
-        song: "Morat - Cómo Te Atreves", 
-        id: "V9X3j1t2C_4", 
-        start: 40, 
-        duration: 18, 
-        hint: "...cómo te atreves a volver, a darle luz a mi vida..." 
+        song: "Shakira - Dai Dai", 
+        id: "aUz6PkvGJa0", 
+        start: 53, 
+        duration: 80, 
+        hint: "...se contagio y, tú sabes, eso nunca falla..." 
       }
     ];
 
@@ -459,59 +482,155 @@
     let scores = { 1: 0, 2: 0 };
     let timer;
 
+    let faseATimeLeft = 60;
+    let faseATimerInterval = null;
+    let isFaseATimerRunning = false;
+
     function startApp() {
       const cover = document.getElementById('start-cover');
       cover.classList.add('opacity-0', 'pointer-events-none');
-      setTimeout(() => {
-        cover.style.display = 'none';
-      }, 500);
+      setTimeout(() => { cover.style.display = 'none'; }, 500);
       loadRound(0);
     }
 
     function toggleRulesModal(show) {
       const modal = document.getElementById('rules-modal');
-      if (show) {
-        modal.classList.remove('hidden');
-      } else {
-        modal.classList.add('hidden');
-      }
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
     }
 
     function loadRound(idx) {
       current = idx;
       clearTimeout(timer);
+      stopFaseATimer();
+      
       const r = rounds[idx];
       
       document.getElementById('r-num').innerText = `Ronda ${idx + 1} / ${rounds.length}`;
       document.getElementById('r-word').innerText = r.word;
       document.getElementById('r-song').innerText = r.song;
-      document.getElementById('r-hint').innerText = r.hint;
+      document.getElementById('r-hint').innerHTML = r.hint;
       document.getElementById('hint-box').classList.add('hidden');
       document.getElementById('word-hints-box').classList.add('hidden');
       document.getElementById('word-hint-icon').className = "fa-solid fa-chevron-down";
-
+      document.getElementById('word-hint-btn').classList.remove('btn-pista-glow');
       document.getElementById('artist-info-1').classList.add('hidden');
-      document.getElementById('artist-info-2').classList.add('hidden');
+      document.getElementById('song-title-info-1').classList.add('hidden');
 
-      // Carga inicial sin autorun
+      showVideoCurtain(true);
+
+      switchPhase('A');
+
       document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?enablejsapi=1&playsinline=1`;
+      startFaseATimer(60);
+    }
+
+    function showVideoCurtain(show) {
+      const curtain = document.getElementById('video-curtain');
+      if (show) {
+        curtain.classList.remove('hidden');
+      } else {
+        curtain.classList.add('hidden');
+      }
+    }
+
+    function switchPhase(phase) {
+      const panelA = document.getElementById('panel-a');
+      const panelB = document.getElementById('panel-b');
+      const tabA = document.getElementById('tab-a-btn');
+      const tabB = document.getElementById('tab-b-btn');
+
+      if (phase === 'A') {
+        panelA.classList.remove('hidden');
+        panelB.classList.add('hidden');
+        tabA.className = "py-2 rounded-lg text-xs font-extrabold bg-pink-600 text-white shadow transition";
+        tabB.className = "py-2 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition";
+      } else {
+        panelA.classList.add('hidden');
+        panelB.classList.remove('hidden');
+        tabB.className = "py-2 rounded-lg text-xs font-extrabold bg-purple-600 text-white shadow transition";
+        tabA.className = "py-2 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition";
+      }
+    }
+
+    function startFaseATimer(seconds) {
+      clearInterval(faseATimerInterval);
+      faseATimeLeft = seconds;
+      isFaseATimerRunning = true;
+      updateTimerDisplay();
+
+      faseATimerInterval = setInterval(() => {
+        if (faseATimeLeft > 0) {
+          faseATimeLeft--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(faseATimerInterval);
+          isFaseATimerRunning = false;
+          onFaseATimeout();
+        }
+      }, 1000);
+    }
+
+    function stopFaseATimer() {
+      clearInterval(faseATimerInterval);
+      isFaseATimerRunning = false;
+      document.getElementById('timer-toggle-btn').innerText = 'Reanudar';
+    }
+
+    function toggleFaseATimer() {
+      if (isFaseATimerRunning) {
+        stopFaseATimer();
+      } else {
+        if (faseATimeLeft > 0) {
+          startFaseATimer(faseATimeLeft);
+          document.getElementById('timer-toggle-btn').innerText = 'Parar';
+        }
+      }
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('fasea-timer').innerText = `${faseATimeLeft}s`;
+      document.getElementById('timer-toggle-btn').innerText = isFaseATimerRunning ? 'Parar' : 'Reanudar';
+    }
+
+    function onFaseATimeout() {
+      document.getElementById('pista-overlay').classList.remove('hidden');
+      document.getElementById('word-hint-btn').classList.add('btn-pista-glow');
+    }
+
+    function closePistaOverlay() {
+      document.getElementById('pista-overlay').classList.add('hidden');
+      triggerPistaClick();
+    }
+
+    function triggerPistaClick() {
+      const box = document.getElementById('word-hints-box');
+      const icon = document.getElementById('word-hint-icon');
+      const btn = document.getElementById('word-hint-btn');
+
+      box.classList.remove('hidden');
+      icon.className = "fa-solid fa-chevron-up";
+      btn.classList.remove('btn-pista-glow');
+      startFaseATimer(60);
     }
 
     function playMainSong(isGameCut) {
       clearTimeout(timer);
+      stopFaseATimer();
+      showVideoCurtain(false);
       const r = rounds[current];
       
       if (isGameCut) {
-        // Reproduce el fragmento concreto de la Fase B y activa el temporizador
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&autoplay=1&playsinline=1`;
+        
+        // Se calcula la duración real restando el tiempo de inicio al tiempo final
+        const playDuration = Math.max((r.duration - r.start), 1) * 1000;
         
         timer = setTimeout(() => {
           document.getElementById('overlay').classList.remove('hidden');
-          // Pausa el video cargándolo en el segundo inicial de corte sin autoplay
           document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&playsinline=1`;
-        }, r.duration * 1000);
+        }, playDuration);
       } else {
-        // Reproduce completo desde el inicio (sin activar emergente)
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${r.id}?autoplay=1&playsinline=1`;
       }
     }
@@ -520,28 +639,37 @@
       const r = rounds[current];
       const hintObj = r.hints[num - 1];
       const el = document.getElementById(`artist-info-${num}`);
-      const songTitle = hintObj.title ? ` ("${hintObj.title}")` : "";
-      el.innerText = `🎤 Cantante: ${hintObj.artist}${songTitle}`;
+      el.innerText = `🎤 Cantante: ${hintObj.artist}`;
+      el.classList.remove('hidden');
+    }
+
+    function revealSongTitle(num) {
+      const r = rounds[current];
+      const hintObj = r.hints[num - 1];
+      const el = document.getElementById(`song-title-info-${num}`);
+      el.innerText = `🎵 Canción: "${hintObj.title}"`;
       el.classList.remove('hidden');
     }
 
     function playHintSong(num, isGameCut) {
       clearTimeout(timer);
+      stopFaseATimer();
+      showVideoCurtain(false);
       const r = rounds[current];
       const hintObj = r.hints[num - 1];
 
       if (isGameCut) {
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&autoplay=1&playsinline=1`;
+        
+        const durationSecs = hintObj.duration > hintObj.start ? (hintObj.duration - hintObj.start) : hintObj.duration;
+        
+        timer = setTimeout(() => {
+          document.getElementById('overlay').classList.remove('hidden');
+          document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&playsinline=1`;
+        }, durationSecs * 1000);
       } else {
         document.getElementById('yt-iframe').src = `https://www.youtube.com/embed/${hintObj.id}?autoplay=1&playsinline=1`;
       }
-    }
-
-    function toggleWordHints() {
-      const box = document.getElementById('word-hints-box');
-      const icon = document.getElementById('word-hint-icon');
-      box.classList.toggle('hidden');
-      icon.className = box.classList.contains('hidden') ? "fa-solid fa-chevron-down" : "fa-solid fa-chevron-up";
     }
 
     function closeOverlay() {
@@ -557,10 +685,41 @@
     function addPts(team, pts) {
       scores[team] += pts;
       document.getElementById(`s${team}`).innerText = scores[team];
+      stopFaseATimer();
     }
 
     function toggleHint() {
       document.getElementById('hint-box').classList.toggle('hidden');
+    }
+
+    function endGame() {
+      stopFaseATimer();
+      clearTimeout(timer);
+      
+      const t1Name = document.getElementById('t1-name').value || 'Equipo 1';
+      const t2Name = document.getElementById('t2-name').value || 'Equipo 2';
+      const p1 = scores[1];
+      const p2 = scores[2];
+
+      const winnerTitle = document.getElementById('winner-title');
+      const winnerScore = document.getElementById('winner-score');
+
+      if (p1 > p2) {
+        winnerTitle.innerHTML = `¡Enhorabuena al <span class="text-pink-400">${t1Name}</span>!`;
+        winnerScore.innerText = `Habéis ganado con ${p1} puntos 🎉`;
+      } else if (p2 > p1) {
+        winnerTitle.innerHTML = `¡Enhorabuena al <span class="text-purple-400">${t2Name}</span>!`;
+        winnerScore.innerText = `Habéis ganado con ${p2} puntos 🎉`;
+      } else {
+        winnerTitle.innerHTML = `¡Empate Increíble! 🤝`;
+        winnerScore.innerText = `Ambos equipos han conseguido ${p1} puntos`;
+      }
+
+      document.getElementById('winner-modal').classList.remove('hidden');
+    }
+
+    function closeWinnerModal() {
+      document.getElementById('winner-modal').classList.add('hidden');
     }
   </script>
 </body>
