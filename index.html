@@ -91,7 +91,7 @@
         </div>
 
         <div class="bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 font-semibold text-[11px] text-center">
-          ⚠️️ <strong>REGLA IMPORTANTE:</strong> No hay rebotes para el otro equipo.
+          ⚠ <strong>REGLA IMPORTANTE:</strong> No hay rebotes para el otro equipo.
         </div>
       </div>
 
@@ -478,7 +478,7 @@
 
     let current = 0;
     let scores = { 1: 0, 2: 0 };
-    let timer;
+    let cutTimer = null;
 
     let faseATimeLeft = 60;
     let faseATimerInterval = null;
@@ -499,7 +499,7 @@
 
     function loadRound(idx) {
       current = idx;
-      clearTimeout(timer);
+      if (cutTimer) clearTimeout(cutTimer);
       stopFaseATimer();
       
       const r = rounds[idx];
@@ -612,7 +612,7 @@
     }
 
     function playMainSong(isGameCut) {
-      clearTimeout(timer);
+      if (cutTimer) clearTimeout(cutTimer);
       stopFaseATimer();
       showVideoCurtain(false);
       
@@ -622,8 +622,9 @@
       if (isGameCut) {
         iframe.src = `https://www.youtube.com/embed/${r.id}?start=${r.start}&autoplay=1&playsinline=1`;
         
-        timer = setTimeout(() => {
+        cutTimer = setTimeout(() => {
           document.getElementById('overlay').classList.remove('hidden');
+          iframe.src = '';
         }, r.duration * 1000);
       } else {
         iframe.src = `https://www.youtube.com/embed/${r.id}?autoplay=1&playsinline=1`;
@@ -631,7 +632,7 @@
     }
 
     function playHintSong(num, isGameCut) {
-      clearTimeout(timer);
+      if (cutTimer) clearTimeout(cutTimer);
       stopFaseATimer();
       showVideoCurtain(false);
       
@@ -642,8 +643,9 @@
       if (isGameCut) {
         iframe.src = `https://www.youtube.com/embed/${hintObj.id}?start=${hintObj.start}&autoplay=1&playsinline=1`;
         
-        timer = setTimeout(() => {
+        cutTimer = setTimeout(() => {
           document.getElementById('overlay').classList.remove('hidden');
+          iframe.src = '';
         }, hintObj.duration * 1000);
       } else {
         iframe.src = `https://www.youtube.com/embed/${hintObj.id}?autoplay=1&playsinline=1`;
@@ -688,7 +690,7 @@
 
     function endGame() {
       stopFaseATimer();
-      clearTimeout(timer);
+      if (cutTimer) clearTimeout(cutTimer);
       
       const t1Name = document.getElementById('t1-name').value || 'Equipo 1';
       const t2Name = document.getElementById('t2-name').value || 'Equipo 2';
